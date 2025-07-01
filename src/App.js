@@ -128,6 +128,72 @@ function App() {
 
   setArray(tempArray);
 };
+  const mergeSort = async () => {
+    const bars = document.getElementsByClassName('array-bar');
+    const tempArray = [...array];            // make a local working copy
+    await mergeSortHelper(tempArray, 0, tempArray.length - 1, bars);
+    setArray(tempArray);                      // final state update
+  };
+
+  const mergeSortHelper = async (arr, start, end, bars) => {
+    if (start >= end || cancelSort) return;
+    const mid = Math.floor((start + end) / 2);
+
+    await mergeSortHelper(arr, start,   mid,     bars);
+    await mergeSortHelper(arr, mid + 1, end,     bars);
+    await merge(arr,           start,   mid, end, bars);
+
+    /* optional: colour whole segment green when this level is fully sorted */
+    if (end - start === arr.length - 1) {
+      for (let i = start; i <= end; i++) bars[i].style.backgroundColor = 'green';
+    }
+};
+
+const merge = async (arr, start, mid, end, bars) => {
+  const left  = arr.slice(start, mid + 1);
+  const right = arr.slice(mid + 1, end + 1);
+  let i = 0, j = 0, k = start;
+
+  while (i < left.length && j < right.length) {
+    if (cancelSort) return;
+
+    /* highlight bar k where the next value will be placed */
+    bars[k].style.backgroundColor = 'red';
+    await new Promise(res => setTimeout(res, 50));
+
+    if (left[i] <= right[j]) {
+      arr[k] = left[i];
+      bars[k].style.height = `${left[i]}px`;
+      i++;
+    } else {
+      arr[k] = right[j];
+      bars[k].style.height = `${right[j]}px`;
+      j++;
+    }
+    bars[k].style.backgroundColor = 'blue';
+    k++;
+  }
+
+  /* copy any leftover items */
+  while (i < left.length) {
+    if (cancelSort) return;
+    bars[k].style.backgroundColor = 'red';
+    await new Promise(res => setTimeout(res, 50));
+    arr[k] = left[i];
+    bars[k].style.height = `${left[i]}px`;
+    bars[k].style.backgroundColor = 'blue';
+    i++; k++;
+  }
+  while (j < right.length) {
+    if (cancelSort) return;
+    bars[k].style.backgroundColor = 'red';
+    await new Promise(res => setTimeout(res, 50));
+    arr[k] = right[j];
+    bars[k].style.height = `${right[j]}px`;
+    bars[k].style.backgroundColor = 'blue';
+    j++; k++;
+  }
+};
   return (
     <div className="App">
       <h1 className="main-heading">Sorting Visualizer</h1>
